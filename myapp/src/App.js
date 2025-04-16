@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Modal from 'bootstrap/js/dist/modal';
 import * as XLSX from 'xlsx';
-import { FaTrash, FaFileExport, FaFileImport, FaLock, FaLockOpen } from "react-icons/fa";
+import { FaTrash, FaFileExport, FaFileImport, FaLock, FaLockOpen, FaCheck, FaTimes, FaSave } from "react-icons/fa";
 
 function TodoApp() {
   const [tasks, setTasks] = useState([]);
@@ -13,7 +13,6 @@ function TodoApp() {
   const fileInputRef = useRef();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
@@ -61,6 +60,19 @@ function TodoApp() {
     setInput("");
     setCurrentPage(1);
     const modalElement = document.getElementById('confirmModal');
+    const modalInstance = Modal.getInstance(modalElement);
+    modalInstance.hide();
+  };
+
+  const handleSaveToDB = () => {
+    const modalElement = document.getElementById('saveDBConfirmModal');
+    const modal = new Modal(modalElement);
+    modal.show();
+  };
+
+  const confirmSaveTasksToDB = () => {
+    // Simulate saving to database
+    const modalElement = document.getElementById('saveDBConfirmModal');
     const modalInstance = Modal.getInstance(modalElement);
     modalInstance.hide();
   };
@@ -149,55 +161,62 @@ function TodoApp() {
             <button className="btn btn-lg btn-primary" onClick={handleAddTask}>Add</button>
           </div>
 
-          <div className="table-responsive">
-            <table className="table table-striped align-middle">
-              <thead className="table-light">
-                <tr>
-                  <th style={{ width: '50%' }}>Task</th>
-                  <th style={{ width: '30%' }}>Status</th>
-                  <th style={{ width: '20%' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentTasks.map((task) => (
-                  <tr key={task.id}>
-                    <td>{task.text}</td>
-                    <td>
-                      <div className="btn-group" role="group">
-                        <input
-                          type="radio"
-                          className="btn-check"
-                          name={`status-${task.id}`}
-                          id={`done-${task.id}`}
-                          checked={task.done}
-                          onChange={() => handleStatusChange(task.id, true)}
-                        />
-                        <label className="btn btn-outline-success" htmlFor={`done-${task.id}`}>Completed</label>
-                        <input
-                          type="radio"
-                          className="btn-check"
-                          name={`status-${task.id}`}
-                          id={`not-done-${task.id}`}
-                          checked={!task.done}
-                          onChange={() => handleStatusChange(task.id, false)}
-                        />
-                        <label className="btn btn-outline-secondary" htmlFor={`not-done-${task.id}`}>Not Completed</label>
-                      </div>
-                    </td>
-                    <td className="d-flex gap-2">
-                      <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(task.id)} disabled={task.locked}>
-                        <FaTrash />
-                      </button>
-                      <button className="btn btn-sm btn-outline-dark" onClick={() => toggleLock(task.id)}>
-                        {task.locked ? <FaLock /> : <FaLockOpen />}
-                      </button>
-                    </td>
+          {tasks.length > 0 && (
+            <div className="table-responsive">
+              <table className="table table-striped align-middle">
+                <thead className="table-light">
+                  <tr>
+                    <th style={{ width: '50%' }}>Task</th>
+                    <th style={{ width: '30%' }}>Status</th>
+                    <th style={{ width: '20%' }}>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {currentTasks.map((task) => (
+                    <tr key={task.id}>
+                      <td>{task.text}</td>
+                      <td>
+                        <div className="btn-group" role="group">
+                          <input
+                            type="radio"
+                            className="btn-check"
+                            name={`status-${task.id}`}
+                            id={`done-${task.id}`}
+                            checked={task.done}
+                            onChange={() => handleStatusChange(task.id, true)}
+                          />
+                          <label className="btn btn-outline-success" htmlFor={`done-${task.id}`}>
+                            {isMobile ? <FaCheck /> : 'Completed'}
+                          </label>
+                          <input
+                            type="radio"
+                            className="btn-check"
+                            name={`status-${task.id}`}
+                            id={`not-done-${task.id}`}
+                            checked={!task.done}
+                            onChange={() => handleStatusChange(task.id, false)}
+                          />
+                          <label className="btn btn-outline-secondary" htmlFor={`not-done-${task.id}`}>
+                            {isMobile ? <FaTimes /> : 'Not Completed'}
+                          </label>
+                        </div>
+                      </td>
+                      <td className="flex gap-2 mx-2">
+                        <button className="btn btn-sm btn-outline-danger mx-1" onClick={() => handleDelete(task.id)} disabled={task.locked}>
+                          <FaTrash />
+                        </button>
+                        <button className="btn btn-sm btn-outline-dark mx-1" onClick={() => toggleLock(task.id)}>
+                          {task.locked ? <FaLock /> : <FaLockOpen />}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
+          {tasks.length > 0 && (
           <nav className="my-4">
             <ul className="pagination justify-content-center">
               <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
@@ -213,6 +232,7 @@ function TodoApp() {
               </li>
             </ul>
           </nav>
+          )}
 
           <div className="d-flex flex-wrap justify-content-center gap-3">
             <button
@@ -221,6 +241,13 @@ function TodoApp() {
               disabled={tasks.length === 0}
             >
               {isMobile ? <FaTrash /> : 'Remove All Tasks'}
+            </button>
+            <button
+              className="btn btn-info text-white"
+              onClick={handleSaveToDB}
+              disabled={tasks.length === 0}
+            >
+              {isMobile ? <FaSave /> : 'Save to Database'}
             </button>
             <button
               className="btn btn-success"
@@ -260,11 +287,31 @@ function TodoApp() {
           </div>
         </div>
       </div>
+
+      <div className="modal fade" id="saveDBConfirmModal" tabIndex="-1" aria-labelledby="saveDBConfirmModalLabel" aria-hidden="true">
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title" id="saveDBConfirmModalLabel">Saving to database</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div className="modal-body">
+              The tasks will be saved to database. Are you sure you want to proceed?
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" className="btn btn-success" onClick={confirmSaveTasksToDB}>Yes, Save tasks</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
 
 export default TodoApp;
+
 
 
 // Note: The Bootstrap modal functionality requires Bootstrap JS to be included in your project.
