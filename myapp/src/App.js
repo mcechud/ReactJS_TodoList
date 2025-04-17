@@ -22,7 +22,7 @@ function TodoApp() {
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const tasksPerPage = 15;
+  const tasksPerPage = 6; // number of tasks per page
   const fileInputRef = useRef();
 
   /* mobile‑viewpoint detection */
@@ -182,11 +182,11 @@ function TodoApp() {
   /* render                                                             */
   /* ------------------------------------------------------------------ */
   return (
-    <div className="container py-5">
+    <div className="container p-5">
       <div className="card shadow border-0 rounded-4">
         <div className="card-body p-4">
           <h2 className="text-center mb-4 fw-bold text-primary">
-            ReactJS : Todo List
+            Todo List (React JS)
           </h2>
 
           {/* add‑task input */}
@@ -328,56 +328,71 @@ function TodoApp() {
 
           {/* bulk buttons */}
           <div className="d-flex flex-wrap justify-content-center gap-3">
-            <button
-              className="btn btn-success"
-              onClick={() => completeAll(true)}
-              disabled={tasks.every((t) => t.done) || tasks.length === 0}
+            {/* show these ONLY when tasks exist */}
+            {tasks.length > 0 && (
+              <div className="d-flex flex-wrap justify-content-center gap-3">
+                <button
+                  className="btn btn-success"
+                  onClick={() => completeAll(true)}
+                  disabled={tasks.every((t) => t.done) || tasks.length === 0}
+                  title="Complete All"
+                >
+                  {isMobile ? <FaCheck /> : "Complete All"}
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => completeAll(false)}
+                  disabled={tasks.every((t) => !t.done) || tasks.length === 0}
+                  title="Mark All Incomplete"
+                >
+                  {isMobile ? <FaTimes /> : "Mark All Incomplete"}
+                </button>
+                <button
+                  className="btn btn-danger"
+                  onClick={() => lockAll(true)}
+                  disabled={tasks.every((t) => t.locked) || tasks.length === 0}
+                  title="Lock All"
+                >
+                  {isMobile ? <FaLock /> : "Lock All"}
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => lockAll(false)}
+                  disabled={tasks.every((t) => !t.locked) || tasks.length === 0}
+                  title="Unlock All"
+                >
+                  {isMobile ? <FaLockOpen /> : "Unlock All"}
+                </button>
+                <button
+                  className="btn btn-warning text-white"
+                  onClick={handleClearAll}
+                  disabled={tasks.length === 0}
+                  title="Remove All Unlocked Tasks"
+                >
+                  {isMobile ? <FaTrash /> : "Remove All"}
+                </button>
+                <button
+                  className="btn btn-info text-white"
+                  onClick={() => new Modal("#saveDBConfirmModal").show()}
+                  disabled={tasks.length === 0}
+                  title="Save to DB"
+                >
+                  {isMobile ? <FaSave /> : "Save to DB"}
+                </button>
+                <button
+                  className="btn btn-success"
+                  onClick={handleExportToExcel}
+                  disabled={tasks.length === 0}
+                  title="Export to Excel"
+                >
+                  {isMobile ? <FaFileExport /> : "Export Excel"}
+                </button>
+              </div>
+            )}
+            <label
+              className="btn btn-outline-primary mb-0"
+              title="Import from Excel"
             >
-              {isMobile ? <FaCheck /> : "Complete All"}
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => completeAll(false)}
-              disabled={tasks.every((t) => !t.done) || tasks.length === 0}
-            >
-              {isMobile ? <FaTimes /> : "Mark All Incomplete"}
-            </button>
-            <button
-              className="btn btn-danger"
-              onClick={() => lockAll(true)}
-              disabled={tasks.every((t) => t.locked) || tasks.length === 0}
-            >
-              {isMobile ? <FaLock /> : "Lock All"}
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => lockAll(false)}
-              disabled={tasks.every((t) => !t.locked) || tasks.length === 0}
-            >
-              {isMobile ? <FaLockOpen /> : "Unlock All"}
-            </button>
-            <button
-              className="btn btn-warning text-white"
-              onClick={handleClearAll}
-              disabled={tasks.length === 0}
-            >
-              {isMobile ? <FaTrash /> : "Remove All"}
-            </button>
-            <button
-              className="btn btn-info text-white"
-              onClick={() => new Modal("#saveDBConfirmModal").show()}
-              disabled={tasks.length === 0}
-            >
-              {isMobile ? <FaSave /> : "Save to DB"}
-            </button>
-            <button
-              className="btn btn-success"
-              onClick={handleExportToExcel}
-              disabled={tasks.length === 0}
-            >
-              {isMobile ? <FaFileExport /> : "Export Excel"}
-            </button>
-            <label className="btn btn-outline-primary mb-0">
               {isMobile ? <FaFileImport /> : "Import Excel"}
               <input
                 type="file"
@@ -385,6 +400,9 @@ function TodoApp() {
                 onChange={handleImportFromExcel}
                 ref={fileInputRef}
                 style={{ display: "none" }}
+                onClick={(e) => {
+                  e.target.value = null; // reset file input
+                }}
               />
             </label>
           </div>
