@@ -25,7 +25,7 @@ function TodoApp() {
   const tasksPerPage = 15;
   const fileInputRef = useRef();
 
-  /* mobile‑view detection */
+  /* mobile‑viewpoint detection */
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
